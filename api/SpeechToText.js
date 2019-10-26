@@ -10,17 +10,17 @@ const bucketName = process.env.BUCKET_NAME;
 // Creates access to Cloud Storage
 const storage = new Storage({
     projectId: process.env.PROJECT_ID,
-    keyFilename: './api/Polyteach-bc79d4e94e80.json',
+    keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
 });
 
 // Create access to the Speech to text API
 const speechClient = new speech.SpeechClient({
     projectId: process.env.PROJECT_ID,
-    keyFilename: './api/Polyteach-bc79d4e94e80.json',
+    keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
 });
 
 const uploadToGcs = async (filePath) => {
-    const audioPath = 'uploads/videos/' + filePath.replace(/^.*[\\\/]/, '') + ".mp3";
+    const audioPath = 'uploads/videos/' + filePath.replace(/^.*[\\\/]/, '').replace('.mp4', '.mp3');
     // Get the audio from the video (needs ffmpeg to be installed on the server)
     await extractAudio({
         input: filePath,
@@ -28,12 +28,13 @@ const uploadToGcs = async (filePath) => {
     });
     // We upload the audio on the Cloud Storage
     await storage.bucket(bucketName).upload(audioPath);
+    await storage.bucket(bucketName).upload('uploads/videos/' + filePath.replace(/^.*[\\\/]/, ''));
     // We return the uri of the file on the Cloud Storage
-    return `gs://${bucketName}/${filePath.replace(/^.*[\\\/]/, '') + ".mp3"}`;
+    return `gs://${bucketName}/${filePath.replace(/^.*[\\\/]/, '').replace('.mp4', '.mp3')}`;
 };
 
-function getTextFromVideo(filePath) {
-    uploadToGcs(filePath)
+async function getTextFromVideo(filePath) {
+    return await uploadToGcs(filePath)
         .then(async (gcsUri) => {
             console.log(gcsUri);
             const audio = {
@@ -42,8 +43,11 @@ function getTextFromVideo(filePath) {
 
             const config = {
                 encoding: 'mp3',
-                sampleRateHertz: 24000,
-                languageCode: 'fr-FR',
+                sampleRateHertz: 16000,
+                languageCode: 'en-US',
+                enableWordTimeOffsets: true,
+                enableAutomaticPunctuation: true,
+                model: 'video'
             };
 
             const request = {
@@ -55,17 +59,13 @@ function getTextFromVideo(filePath) {
             const [response] = await operation.promise();
             const transcription = response.results
                 .map(result => result.alternatives[0].transcript)
-                .join('\n');
-            console.log(`Transcription: ${transcription}`);
+                .join("\n");
 
-            // We delete the audio file at the end to save space
-            await storage
-                .bucket(bucketName)
-                .file(filePath.replace(/^.*[\\\/]/, '') + ".mp3")
-                .delete();
-
-            return transcription
-        })
+            return {
+                transcription: transcription.split('.'),
+                videoURL: `https://storage.googleapis.com/${bucketName}/` + filePath.replace(/^.*[\\\/]/, '')
+            }
+        });
 
 }
 
