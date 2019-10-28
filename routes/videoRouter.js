@@ -2,25 +2,30 @@ const express = require('express');
 const router = express();
 const multer = require('multer');
 const SpeechToText = require('../api/SpeechToText');
-const fs = require('fs');
+//const MSpeechToText = require('../api/MSpeechToText');
+const Storage = require('../core/Storage');
+const Subtitles = require('../core/Subtitles');
 
-// The Storage options on the server
-var storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/videos/')
-  },
-  filename: function (req, file, cb) {
-    cb(null, file.originalname)
-  }
-});
-
-
-const upload = multer({storage: storage});
+const upload = multer({storage: Storage.storage});
 
 router.post('/subtitles', upload.single('video'), async function (req, res) {
-  const result = await SpeechToText.getTextFromVideo(req.file.path);
-  console.log(result);
-  res.send(result)
+  // Call to the Speech To Text API
+  const result = await SpeechToText.getTextFromVideo(req.file.originalname.replace('.mp4', ''));
+  // Get the sentences from the result of the API
+  const transcription = Subtitles.getSentences(result.response);
+  // We get the timings for each sentences
+  const timings = Subtitles.getSubtitlesTiming(result.response);
+  // We create the VTT file
+  const vttPath = Subtitles.createVTTFile(req.file.originalname.replace('.mp4', ''), timings, transcription);
+  // We upload the VTT file to the Google Cloud Storage
+  const vttURL = await SpeechToText.uploadToStorage(vttPath);
+
+  // We send back the Video URL, the content of the video, the VTT file URL
+  res.send({videoURL: result.videoURL, transcription: transcription, vttURL: vttURL})
+
+  //const result = await MSpeechToText.mock();
+  //res.send(result)
+
 });
 
 module.exports = router;

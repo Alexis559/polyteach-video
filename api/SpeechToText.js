@@ -19,28 +19,53 @@ const speechClient = new speech.SpeechClient({
     keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
 });
 
-const uploadToGcs = async (filePath) => {
-    const audioPath = 'uploads/videos/' + filePath.replace(/^.*[\\\/]/, '').replace('.mp4', '.mp3');
+/**
+ * Function to upload a file on the Google Cloud Storage.
+ *
+ * @param filePath The path to the file we want to upload
+ * @returns {Promise<string>}
+ */
+async function uploadToStorage(filePath) {
+    await storage.bucket(bucketName).upload(filePath);
+    return `https://storage.googleapis.com/${bucketName}/` + filePath.replace(/^.*[\\\/]/, '')
+}
+
+/**
+ * Function to extract the audio and upload it to Google Cloud Storage
+ *
+ * @param file the name of the video (must be in uploads/videos)
+ * @returns {Promise<string>}
+ */
+const uploadToGcs = async (file) => {
+    const audioPath = 'uploads/videos/' + file + '.mp3';
+    const videoPath = 'uploads/videos/' + file + '.mp4';
     // Get the audio from the video (needs ffmpeg to be installed on the server)
     await extractAudio({
-        input: filePath,
+        input: videoPath,
         output: audioPath
     });
     // We upload the audio on the Cloud Storage
-    await storage.bucket(bucketName).upload(audioPath);
-    await storage.bucket(bucketName).upload('uploads/videos/' + filePath.replace(/^.*[\\\/]/, ''));
+    await uploadToStorage(audioPath);
+    // We upload the video on the Cloud Storage
+    await uploadToStorage('uploads/videos/' + filePath + '.mp4');
     // We return the uri of the file on the Cloud Storage
-    return `gs://${bucketName}/${filePath.replace(/^.*[\\\/]/, '').replace('.mp4', '.mp3')}`;
+    return `gs://${bucketName}/${file}` + '.mp3';
 };
 
-async function getTextFromVideo(filePath) {
-    return await uploadToGcs(filePath)
+/**
+ * Function to get the text and their timestamps for a video.
+ *
+ * @param file The NAME of the video file (must be in uploads/videos)
+ * @returns {Promise<{videoURL: string, response: *}>} Return the text and their timestamps and the URL of the video on the Google Cloud Storage
+ */
+async function getTextFromVideo(file) {
+    return await uploadToGcs(file)
         .then(async (gcsUri) => {
-            console.log(gcsUri);
             const audio = {
                 uri: gcsUri,
             };
 
+            // Some config for the Speech To Text API
             const config = {
                 encoding: 'mp3',
                 sampleRateHertz: 16000,
@@ -57,18 +82,13 @@ async function getTextFromVideo(filePath) {
 
             const [operation] = await speechClient.longRunningRecognize(request);
             const [response] = await operation.promise();
-            const transcription = response.results
-                .map(result => result.alternatives[0].transcript)
-                .join("\n");
 
-            return {
-                transcription: transcription.split('.'),
-                videoURL: `https://storage.googleapis.com/${bucketName}/` + filePath.replace(/^.*[\\\/]/, '')
-            }
+            return {response: response, videoURL: `https://storage.googleapis.com/${bucketName}/` + file + '.mp4'};
         });
 
 }
 
 module.exports = {
-    getTextFromVideo: getTextFromVideo
+    getTextFromVideo: getTextFromVideo,
+    uploadToStorage: uploadToStorage
 };
