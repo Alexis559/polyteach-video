@@ -48,8 +48,16 @@ function getSubtitlesTiming(response) {
         });
     });
 
+    // If the last sentence is not finished we get the last timing of the last word of the last sentence
     if (sentence.length > 0) {
-        sentence.push(sentence[0]);
+        const lastResult = response.results[response.results.length - 1];
+        const lastAlternatives = lastResult.alternatives[lastResult.alternatives.length - 1];
+        const lastWord = lastAlternatives.words[lastAlternatives.words.length - 1];
+        const endSecs =
+            `${lastWord.endTime.seconds}` +
+            `.` +
+            lastWord.endTime.nanos / 100000000;
+        sentence.push(endSecs);
         subtitlesTiming.push(sentence);
     }
 
@@ -68,7 +76,6 @@ function getSentences(response) {
     return transcription.split(". ")
 }
 
-// TODO change the hard value 0:00:0 and calculate this in function of the real timing
 /**
  * Function to create the VTT subtitles file.
  *
