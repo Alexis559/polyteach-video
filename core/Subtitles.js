@@ -82,16 +82,16 @@ function createVTTFile(filename, timing, subtitles) {
     var text = "WEBVTT\n";
     subtitles.forEach((line) => {
         text += "\n" + i + "\n";
-        if (timing[i - 1][1].split('.')[0].length === 1)
-            text += "0:00:0" + timing[i - 1][0] + "00" + " --> " + "0:00:0" + timing[i - 1][1] + "00";
-        else if (timing[i - 1][1].split('.')[0].length === 1)
-            text += "0:00:0" + timing[i - 1][0] + "00" + " --> " + "0:00:" + timing[i - 1][1] + "00";
-        else
-            text += "0:00:" + timing[i - 1][0] + "00" + " --> " + "0:00:" + timing[i - 1][1] + "00";
+        text += convertSecondsToVTTFormat(timing[i - 1][0]) + " --> " + convertSecondsToVTTFormat(timing[i - 1][1]);
         text += "\n" + line + "\n";
         i++
     });
     return writeFile(filename, text)
+}
+
+function convertSecondsToVTTFormat(seconds) {
+    const t = seconds.split('.')[seconds.split('.').length - 1];
+    return new Date(seconds * 1000).toISOString().substr(11, 8) + "." + t;
 }
 
 /**

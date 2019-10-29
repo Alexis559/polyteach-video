@@ -37,8 +37,9 @@ async function uploadToStorage(filePath) {
  * @returns {Promise<string>}
  */
 const uploadToGcs = async (file) => {
-    const audioPath = 'uploads/videos/' + file + '.mp3';
-    const videoPath = 'uploads/videos/' + file + '.mp4';
+    const fileName = file.replace(file.split('.')[file.split('.').length - 1], "");
+    const audioPath = 'uploads/videos/' + fileName + '.mp3';
+    const videoPath = 'uploads/videos/' + file;
     // Get the audio from the video (needs ffmpeg to be installed on the server)
     await extractAudio({
         input: videoPath,
@@ -47,9 +48,9 @@ const uploadToGcs = async (file) => {
     // We upload the audio on the Cloud Storage
     await uploadToStorage(audioPath);
     // We upload the video on the Cloud Storage
-    await uploadToStorage('uploads/videos/' + filePath + '.mp4');
+    await uploadToStorage('uploads/videos/' + file);
     // We return the uri of the file on the Cloud Storage
-    return `gs://${bucketName}/${file}` + '.mp3';
+    return `gs://${bucketName}/${fileName}` + '.mp3';
 };
 
 /**
@@ -83,7 +84,7 @@ async function getTextFromVideo(file) {
             const [operation] = await speechClient.longRunningRecognize(request);
             const [response] = await operation.promise();
 
-            return {response: response, videoURL: `https://storage.googleapis.com/${bucketName}/` + file + '.mp4'};
+            return {response: response, videoURL: `https://storage.googleapis.com/${bucketName}/` + file};
         });
 
 }
