@@ -2,7 +2,6 @@ const express = require('express');
 const router = express();
 const multer = require('multer');
 const SpeechToText = require('../api/SpeechToText');
-//const MSpeechToText = require('../api/MSpeechToText');
 const Storage = require('../core/Storage');
 const Subtitles = require('../core/Subtitles');
 
@@ -23,9 +22,6 @@ router.post('/subtitles', upload.single('video'), async function (req, res) {
 
     // We send back the Video URL, the content of the video, the VTT file URL
     res.send({videoURL: result.videoURL, transcription: transcription, vttURL: vttURL, timings: timings})
-
-    //const result = await MSpeechToText.mock();
-    //res.send(result)
   } else {
     res.sendStatus(415)
   }

@@ -96,6 +96,12 @@ function createVTTFile(filename, timing, subtitles) {
     return writeFile(filename, text)
 }
 
+/**
+ * Function to convert seconds timing to hh:mm:s.ms format.
+ *
+ * @param seconds the seconds
+ * @returns {string} seconds timing in hh:mm:s.ms format
+ */
 function convertSecondsToVTTFormat(seconds) {
     const t = seconds.split('.')[seconds.split('.').length - 1];
     return new Date(seconds * 1000).toISOString().substr(11, 8) + "." + t;
