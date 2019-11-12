@@ -16,14 +16,14 @@ function getSubtitlesTiming(response) {
             if (wordInfo.word[0] === wordInfo.word[0].toUpperCase() && wordInfo.word.endsWith('.')) {
                 const startSecs =
                     `${wordInfo.startTime.seconds}` +
-                    `.` +
+                    '.' +
                     wordInfo.startTime.nanos / 100000000;
                 if (sentence.length === 0)
                     sentence.push(startSecs);
 
                 const endSecs =
                     `${wordInfo.endTime.seconds}` +
-                    `.` +
+                    '.' +
                     wordInfo.endTime.nanos / 100000000;
                 sentence.push(endSecs);
                 subtitlesTiming.push(sentence);
@@ -32,18 +32,18 @@ function getSubtitlesTiming(response) {
             } else if (wordInfo.word.endsWith('.')) {
                 const endSecs =
                     `${wordInfo.endTime.seconds}` +
-                    `.` +
+                    '.' +
                     wordInfo.endTime.nanos / 100000000;
                 sentence.push(endSecs);
                 subtitlesTiming.push(sentence);
-                sentence = []
+                sentence = [];
             } else if (wordInfo.word[0] === wordInfo.word[0].toUpperCase()) {
                 const startSecs =
                     `${wordInfo.startTime.seconds}` +
-                    `.` +
+                    '.' +
                     wordInfo.startTime.nanos / 100000000;
                 if (sentence.length === 0)
-                    sentence.push(startSecs)
+                    sentence.push(startSecs);
             }
         });
     });
@@ -55,13 +55,13 @@ function getSubtitlesTiming(response) {
         const lastWord = lastAlternatives.words[lastAlternatives.words.length - 1];
         const endSecs =
             `${lastWord.endTime.seconds}` +
-            `.` +
+            '.' +
             lastWord.endTime.nanos / 100000000;
         sentence.push(endSecs);
         subtitlesTiming.push(sentence);
     }
 
-    return subtitlesTiming
+    return subtitlesTiming;
 }
 
 /**
@@ -72,8 +72,8 @@ function getSubtitlesTiming(response) {
 function getSentences(response) {
     const transcription = response.results
         .map(result => result.alternatives[0].transcript)
-        .join("\n");
-    return transcription.split(". ")
+        .join('\n');
+    return transcription.split('. ');
 }
 
 /**
@@ -86,14 +86,14 @@ function getSentences(response) {
  */
 function createVTTFile(filename, timing, subtitles) {
     var i = 1;
-    var text = "WEBVTT\n";
+    var text = 'WEBVTT\n';
     subtitles.forEach((line) => {
-        text += "\n" + i + "\n";
-        text += convertSecondsToVTTFormat(timing[i - 1][0]) + " --> " + convertSecondsToVTTFormat(timing[i - 1][1]);
-        text += "\n" + line + "\n";
-        i++
+        text += '\n' + i + '\n';
+        text += convertSecondsToVTTFormat(timing[i - 1][0]) + ' --> ' + convertSecondsToVTTFormat(timing[i - 1][1]);
+        text += '\n' + line + '\n';
+        i++;
     });
-    return writeFile(filename, text)
+    return writeFile(filename, text);
 }
 
 /**
@@ -104,7 +104,7 @@ function createVTTFile(filename, timing, subtitles) {
  */
 function convertSecondsToVTTFormat(seconds) {
     const t = seconds.split('.')[seconds.split('.').length - 1];
-    return new Date(seconds * 1000).toISOString().substr(11, 8) + "." + t;
+    return new Date(seconds * 1000).toISOString().substr(11, 8) + '.' + t;
 }
 
 /**
@@ -115,14 +115,14 @@ function convertSecondsToVTTFormat(seconds) {
  * @returns {string} The path where is stored the file on the server
  */
 function writeFile(filename, text) {
-    fs.writeFile("./uploads/subtitles/" + filename + "-SUB.vtt", text, function (err) {
+    fs.writeFile('./uploads/subtitles/' + filename + '-SUB.vtt', text, function (err) {
         if (err) {
             return console.log(err);
         }
 
-        console.log("The file was saved!");
-    })
-    return "./uploads/subtitles/" + filename + "-SUB.vtt"
+        console.log('The file was saved!');
+    });
+    return './uploads/subtitles/' + filename + '-SUB.vtt';
 }
 
 module.exports = {

@@ -8,7 +8,7 @@ const Subtitles = require('../core/Subtitles');
 const upload = multer({storage: Storage.storage});
 
 router.post('/subtitles', upload.single('video'), async function (req, res) {
-    if (req.file.mimetype.split("/")[0] === "video") {
+    if (req.file.mimetype.split('/')[0] === 'video') {
         // Call to the Speech To Text API
         const result = await SpeechToText.getTextFromVideo(req.file.originalname);
         // Get the sentences from the result of the API
@@ -21,9 +21,9 @@ router.post('/subtitles', upload.single('video'), async function (req, res) {
         const vttURL = await SpeechToText.uploadToStorage(vttPath);
 
         // We send back the Video URL, the content of the video, the VTT file URL
-        res.send({videoURL: result.videoURL, transcription: transcription, vttURL: vttURL, timings: timings})
+        res.send({videoURL: result.videoURL, transcription: transcription, vttURL: vttURL, timings: timings});
     } else {
-        res.sendStatus(415)
+        res.sendStatus(415);
     }
 
 });

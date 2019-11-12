@@ -27,7 +27,8 @@ const speechClient = new speech.SpeechClient({
  */
 async function uploadToStorage(filePath) {
     await storage.bucket(bucketName).upload(filePath);
-    return `https://storage.googleapis.com/${bucketName}/` + filePath.replace(/^.*[\\\/]/, '')
+    // eslint-disable-next-line no-useless-escape
+    return `https://storage.googleapis.com/${bucketName}/` + filePath.replace(/^.*[\\\/]/, '');
 }
 
 /**
@@ -37,7 +38,7 @@ async function uploadToStorage(filePath) {
  * @returns {Promise<string>}
  */
 const uploadToGcs = async (file) => {
-    const fileName = file.replace(file.split('.')[file.split('.').length - 1], "");
+    const fileName = file.replace(file.split('.')[file.split('.').length - 1], '');
     const audioPath = 'uploads/videos/' + fileName + '.mp3';
     const videoPath = 'uploads/videos/' + file;
     // Get the audio from the video (needs ffmpeg to be installed on the server)
