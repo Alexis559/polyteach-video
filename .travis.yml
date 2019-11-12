@@ -17,6 +17,5 @@ jobs:
         branch: master
 before_deploy:
 - openssl aes-256-cbc -K $encrypted_cbcb7b8ba770_key -iv $encrypted_cbcb7b8ba770_iv
-  -in travis.enc -out .travis/travis -d
-- openssl aes-256-cbc -K $encrypted_cbcb7b8ba770_key -iv $encrypted_cbcb7b8ba770_iv
-  -in Polyteach-bc79d4e94e80.json.enc -out src/api/Polyteach-bc79d4e94e80.json -d
+  -in cryptedfiles.tar.enc -out cryptedfiles.tar -d
+- tar xvf cryptedfiles.tar
