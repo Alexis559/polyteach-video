@@ -1,0 +1,3 @@
+logs_enabled: true
+process_config:
+  enabled: 'disabled'
