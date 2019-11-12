@@ -3,6 +3,10 @@ FROM node:12
 WORKDIR /etc/datadog-agent
 
 ARG DD_API_KEY
+ARG GOOGLE_APPLICATION_CREDENTIALS
+ARG BUCKET_NAME
+ARG PROJECT_ID
+
 ENV DD_SITE="datadoghq.com"
 ENV DD_INSTALL_ONLY=true
 RUN bash -c "$(curl -L https://raw.githubusercontent.com/DataDog/datadog-agent/master/cmd/agent/install_script.sh)"
