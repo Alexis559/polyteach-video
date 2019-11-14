@@ -19,5 +19,3 @@ before_deploy:
 - openssl aes-256-cbc -K $encrypted_cbcb7b8ba770_key -iv $encrypted_cbcb7b8ba770_iv
   -in credentials.tar.enc -out credentials.tar -d
 - tar xvf credentials.tar
-- git add ./src/api/Polyteach-218b86e392c9.json
-- git commit -m "Add gcs key"
