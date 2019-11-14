@@ -50,11 +50,6 @@ app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// eslint-disable-next-line no-unused-vars
-app.get('/', () => {
-    logger.info('[Polyteach-video] A request had been received on /');
-});
-
-app.use('/poc', router);
+app.use('/', router);
 
 module.exports = app;

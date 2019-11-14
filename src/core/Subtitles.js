@@ -104,7 +104,7 @@ function createVTTFile(filename, timing, subtitles) {
  */
 function convertSecondsToVTTFormat(seconds) {
     const t = seconds.split('.')[seconds.split('.').length - 1];
-    return new Date(seconds * 1000).toISOString().substr(11, 8) + '.' + t;
+    return new Date(seconds * 1000).toISOString().substr(11, 8) + '.' + t + '00';
 }
 
 /**
@@ -115,14 +115,14 @@ function convertSecondsToVTTFormat(seconds) {
  * @returns {string} The path where is stored the file on the server
  */
 function writeFile(filename, text) {
-    fs.writeFile('./uploads/subtitles/' + filename + '-SUB.vtt', text, function (err) {
+    fs.writeFile('./content/subtitles/' + filename + '-SUB.vtt', text, function (err) {
         if (err) {
             return console.log(err);
         }
 
         console.log('The file was saved!');
     });
-    return './uploads/subtitles/' + filename + '-SUB.vtt';
+    return './content/subtitles/' + filename + '-SUB.vtt';
 }
 
 module.exports = {
