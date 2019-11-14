@@ -20,10 +20,11 @@ COPY ./datadog/conf.d/nodejs.d ./nodejs.d
 
 WORKDIR /usr/src/app
 
+RUN apt-get update
+RUN apt-get install -y ffmpeg
 COPY . .
 
 RUN npm install
-RUN apt-get install -y ffmpeg
 
 EXPOSE 3000
 
