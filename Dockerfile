@@ -23,7 +23,7 @@ WORKDIR /usr/src/app
 COPY . .
 
 RUN npm install
-RUN ./install_ffmpeg.sh
+RUN apt-get install -y ffmpeg
 
 EXPOSE 3000
 
