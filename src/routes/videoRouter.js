@@ -12,9 +12,11 @@ router.post('/upload', async function (req, res) {
 });
 
 router.post('/subtitles', async function (req, res) {
+    await Config.createFolderStorage(Config.CONTENT_FOLDER);
     const videoPath = await GCP.downloadFromStorage(req.body.videoName, Config.CONTENT_FOLDER);
     // Extension of the video file "mp4", etc...
     const extension = req.body.videoName.substr(req.body.videoName.lastIndexOf('.'));
+    
     // Return the video name with the exention in parameter => video.mp4 -> video.mp3
     const videoFileName = (newExtension) => {
         return req.body.videoName.replace(extension, newExtension);
