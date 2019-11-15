@@ -1,4 +1,5 @@
 const fs = require('fs');
+const logger = require('../helpers/logger');
 
 /**
  * Function to get the timing by sentences.
@@ -7,7 +8,7 @@ const fs = require('fs');
  * @returns {[]} Array with the timing of beginning and ending of each sentences
  */
 function getSubtitlesTiming(response) {
-
+    logger.log('info', 'src.core.Subtitles.getSubtitlesTiming called', response);
     var subtitlesTiming = [];
     var sentence = [];
 
@@ -70,6 +71,7 @@ function getSubtitlesTiming(response) {
  * @returns {string[]}
  */
 function getSentences(response) {
+    logger.log('info', 'src.core.Subtitles.getSentences called', response);
     const transcription = response.results
         .map(result => result.alternatives[0].transcript)
         .join('\n');
@@ -85,6 +87,7 @@ function getSentences(response) {
  * @returns {*} The path where is stored the VTT file on the server
  */
 function createVTTFile(filename, timing, subtitles) {
+    logger.log('info', 'src.core.Subtitles.createVTTFile called', filename, timing, subtitles);
     var i = 1;
     var text = 'WEBVTT\n';
     subtitles.forEach((line) => {
@@ -103,6 +106,7 @@ function createVTTFile(filename, timing, subtitles) {
  * @returns {string} seconds timing in hh:mm:s.ms format
  */
 function convertSecondsToVTTFormat(seconds) {
+    logger.log('info', 'src.core.Subtitles.convertSecondsToVTTFormat called', seconds);
     const t = seconds.split('.')[seconds.split('.').length - 1];
     return new Date(seconds * 1000).toISOString().substr(11, 8) + '.' + t + '00';
 }
@@ -115,6 +119,7 @@ function convertSecondsToVTTFormat(seconds) {
  * @returns {string} The path where is stored the file on the server
  */
 function writeFile(filename, text) {
+    logger.log('info', 'src.core.Subtitles.writeFile called', filename, text);
     fs.writeFile('./content/subtitles/' + filename + '-SUB.vtt', text, function (err) {
         if (err) {
             return console.log(err);

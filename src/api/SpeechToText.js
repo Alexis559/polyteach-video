@@ -1,4 +1,5 @@
 const speech = require('@google-cloud/speech').v1p1beta1;
+const logger = require('../helpers/logger');
 
 require('dotenv').config();
 
@@ -16,6 +17,7 @@ const speechClient = new speech.SpeechClient({
  * @param gcUrlFile
  */
 async function getTextFromVideo(gcUrlFile) {
+    logger.log('info', 'src.api.SpeechToText.getTextFromVideo called', gcUrlFile);
     const audio = {
         uri: gcUrlFile,
     };
@@ -38,6 +40,7 @@ async function getTextFromVideo(gcUrlFile) {
     const [operation] = await speechClient.longRunningRecognize(request);
     const [response] = await operation.promise();
 
+    logger.log('info', 'src.api.SpeechToText.getTextFromVideo returning', response);
     return {response: response};
 }
 
