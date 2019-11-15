@@ -1,4 +1,5 @@
 const {Storage} = require('@google-cloud/storage');
+const logger = require('../helpers/logger');
 
 require('dotenv').config();
 
@@ -12,6 +13,7 @@ const storage = new Storage({
 });
 
 const getOptions = () => {
+    logger.log('info', 'src/api/GCPApi.getOptions called');
     return {
         version: 'v4',
         action: 'write',
@@ -20,6 +22,7 @@ const getOptions = () => {
 };
 
 const optionsDownload = (videoName, contentFolder) => {
+    logger.log('info', 'src/api/GCPApi.optionsDownload called', videoName, contentFolder);
     return {
         // The path to which the file should be downloaded, e.g. "./file.txt"
         destination: `${contentFolder}/${videoName}`,
@@ -34,6 +37,7 @@ const optionsDownload = (videoName, contentFolder) => {
  * @returns {Promise<{gsUrl: string, fileUrl: string}>}
  */
 const uploadToStorage = async (filePath) => {
+    logger.log('info', 'src/api/GCPApi.uploadToStorage called', filePath);
     await storage.bucket(bucketName).upload(filePath);
     // eslint-disable-next-line no-useless-escape
     const fileName = filePath.replace(/^.*[\\\/]/, '');
@@ -44,6 +48,7 @@ const uploadToStorage = async (filePath) => {
 };
 
 const downloadFromStorage = async (videoName, contentFolder) => {
+    logger.log('info', 'src/api/GCPApi.downloadFromStorage called', videoName, contentFolder);
     await storage
         .bucket(bucketName)
         .file(videoName)
@@ -55,6 +60,7 @@ const downloadFromStorage = async (videoName, contentFolder) => {
 };
 
 const getSignedURL = async (videoName) => {
+    logger.log('info', 'src/api/GCPApi.downloadFromStorage called', getSignedURL);
     const url = await storage
         .bucket(bucketName)
         .file(videoName)

@@ -5,13 +5,16 @@ const ExtractAudio = require('../core/VideoTreatment');
 const SpeechToText = require('../api/SpeechToText');
 const Config = require('../config/Config');
 const Subtitles = require('../core/Subtitles');
+const logger = require('../helpers/logger');
 
 router.post('/upload', async function (req, res) {
+    logger.log('info', 'POST /upload received', req);
     const URL = await GCP.getSignedURL(req.body.videoName);
     res.send({signedURL: URL[0]});
 });
 
 router.post('/subtitles', async function (req, res) {
+    logger.log('info', 'POST /subtitles received', req);
     await Config.createFolderStorage(Config.CONTENT_FOLDER);
     await Config.createFolderStorage(Config.SUBTITLES_FOLDER);
     const videoPath = await GCP.downloadFromStorage(req.body.videoName, Config.CONTENT_FOLDER);
