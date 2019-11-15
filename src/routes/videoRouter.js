@@ -24,7 +24,7 @@ router.post('/subtitles', async function (req, res) {
     // Extension of the video file "mp4", etc...
     const extension = req.body.videoName.substr(req.body.videoName.lastIndexOf('.'));
 
-    // Return the video name with the exention in parameter => video.mp4 -> video.mp3
+    // Return the video name with the extension in parameter => video.mp4 -> video.mp3
     const videoFileName = (newExtension) => {
         return req.body.videoName.replace(extension, newExtension);
     };
@@ -46,8 +46,10 @@ router.post('/subtitles', async function (req, res) {
     // We upload the VTT file to the Google Cloud Storage
     const vttURL = await GCP.uploadToStorage(vttPath);
 
-    // We delete the file from our storage
-    Storage.deleteFileFromStorage(videoPath);
+    // We delete the files from our storage
+    Storage.deleteFileFromStorage(videoPath.placeVideo);
+    Storage.deleteFileFromStorage(videoFilePath('.mp3'));
+    Storage.deleteFileFromStorage(vttPath);
 
     res.send({videoURL: videoPath.videoUrl, transcription: transcription, vttURL: vttURL.fileUrl, timings: timings});
 });

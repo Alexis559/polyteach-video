@@ -125,7 +125,7 @@ function writeFile(filename, text) {
             return console.log(err);
         }
 
-        console.log('The file was saved!');
+        console.log('The file ./content/subtitles/' + filename + '-SUB.vtt was saved!');
     });
     return './content/subtitles/' + filename + '-SUB.vtt';
 }

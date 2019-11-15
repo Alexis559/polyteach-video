@@ -3,7 +3,7 @@ const fs = require('fs');
 const deleteFileFromStorage = (pathFile) => {
     fs.unlink(pathFile, function (err) {
         if (err) throw err;
-        console.log('File deleted!');
+        console.log(`File ${pathFile} deleted!`);
     });
 };
 
