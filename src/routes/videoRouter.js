@@ -17,8 +17,8 @@ router.post('/upload', async function (req, res) {
 router.post('/subtitles', async function (req, res) {
 
     logger.log('info', 'POST /subtitles received', req);
-    await Config.createFolderStorage(Config.CONTENT_FOLDER);
-    await Config.createFolderStorage(Config.SUBTITLES_FOLDER);
+    await Storage.createFolderStorage(Config.CONTENT_FOLDER);
+    await Storage.createFolderStorage(Config.SUBTITLES_FOLDER);
 
     const videoPath = await GCP.downloadFromStorage(req.body.videoName, Config.CONTENT_FOLDER);
     // Extension of the video file "mp4", etc...
