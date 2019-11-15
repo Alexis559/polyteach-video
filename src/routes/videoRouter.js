@@ -6,6 +6,7 @@ const SpeechToText = require('../api/SpeechToText');
 const Config = require('../config/Config');
 const Subtitles = require('../core/Subtitles');
 const logger = require('../helpers/logger');
+const Storage = require('../core/Storage');
 
 router.post('/upload', async function (req, res) {
     logger.log('info', 'POST /upload received', req);
@@ -14,9 +15,11 @@ router.post('/upload', async function (req, res) {
 });
 
 router.post('/subtitles', async function (req, res) {
+
     logger.log('info', 'POST /subtitles received', req);
     await Config.createFolderStorage(Config.CONTENT_FOLDER);
     await Config.createFolderStorage(Config.SUBTITLES_FOLDER);
+
     const videoPath = await GCP.downloadFromStorage(req.body.videoName, Config.CONTENT_FOLDER);
     // Extension of the video file "mp4", etc...
     const extension = req.body.videoName.substr(req.body.videoName.lastIndexOf('.'));
@@ -25,10 +28,11 @@ router.post('/subtitles', async function (req, res) {
     const videoFileName = (newExtension) => {
         return req.body.videoName.replace(extension, newExtension);
     };
+
     const videoFilePath = (newExtension) => {
         return videoPath.placeVideo.replace(extension, newExtension);
     };
-    await Config.createFolderStorage(Config.CONTENT_FOLDER);
+
     const audioPath = await ExtractAudio.extractAudioFromVideo(videoPath.placeVideo, videoFilePath('.mp3'));
     const urlAudio = await GCP.uploadToStorage(audioPath);
     // Call to the Speech To Text API
@@ -41,6 +45,10 @@ router.post('/subtitles', async function (req, res) {
     const vttPath = Subtitles.createVTTFile(videoFileName(''), timings, transcription);
     // We upload the VTT file to the Google Cloud Storage
     const vttURL = await GCP.uploadToStorage(vttPath);
+
+    // We delete the file from our storage
+    Storage.deleteFileFromStorage(videoPath);
+
     res.send({videoURL: videoPath.videoUrl, transcription: transcription, vttURL: vttURL.fileUrl, timings: timings});
 });
 
