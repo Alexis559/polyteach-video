@@ -1,5 +1,5 @@
-const fs = require('fs');
 const logger = require('../helpers/logger');
+const Storage = require('../core/Storage');
 
 /**
  * Function to get the timing by sentences.
@@ -7,10 +7,10 @@ const logger = require('../helpers/logger');
  * @param response Results of the Speech To Text API of Google
  * @returns {[]} Array with the timing of beginning and ending of each sentences
  */
-function getSubtitlesTiming(response) {
+const getSubtitlesTiming = (response) => {
     logger.log('info', 'src.core.Subtitles.getSubtitlesTiming called', response);
-    var subtitlesTiming = [];
-    var sentence = [];
+    const subtitlesTiming = [];
+    let sentence = [];
 
     response.results.forEach(result => {
         result.alternatives[0].words.forEach(wordInfo => {
@@ -63,20 +63,20 @@ function getSubtitlesTiming(response) {
     }
 
     return subtitlesTiming;
-}
+};
 
 /**
  *
  * @param response Results of the Speech To Text API of Google
  * @returns {string[]}
  */
-function getSentences(response) {
+const getSentences = (response) => {
     logger.log('info', 'src.core.Subtitles.getSentences called', response);
     const transcription = response.results
         .map(result => result.alternatives[0].transcript)
         .join('\n');
     return transcription.split('. ');
-}
+};
 
 /**
  * Function to create the VTT subtitles file.
@@ -84,20 +84,21 @@ function getSentences(response) {
  * @param filename The name of the VTT file we want to create
  * @param timing The timings for each sentences of the video
  * @param subtitles The sentences of the video
+ * @param contentFolder Path where will be saved the VTT file on the server
  * @returns {*} The path where is stored the VTT file on the server
  */
-function createVTTFile(filename, timing, subtitles) {
+const createVTTFile = (filename, timing, subtitles, contentFolder) => {
     logger.log('info', 'src.core.Subtitles.createVTTFile called', filename, timing, subtitles);
-    var i = 1;
-    var text = 'WEBVTT\n';
+    let i = 1;
+    let text = 'WEBVTT\n';
     subtitles.forEach((line) => {
         text += '\n' + i + '\n';
         text += convertSecondsToVTTFormat(timing[i - 1][0]) + ' --> ' + convertSecondsToVTTFormat(timing[i - 1][1]);
         text += '\n' + line + '\n';
         i++;
     });
-    return writeFile(filename, text);
-}
+    return Storage.writeFile(filename + '-SUB.vtt', text, contentFolder);
+};
 
 /**
  * Function to convert seconds timing to hh:mm:s.ms format.
@@ -105,33 +106,49 @@ function createVTTFile(filename, timing, subtitles) {
  * @param seconds the seconds
  * @returns {string} seconds timing in hh:mm:s.ms format
  */
-function convertSecondsToVTTFormat(seconds) {
+const convertSecondsToVTTFormat = (seconds) => {
     logger.log('info', 'src.core.Subtitles.convertSecondsToVTTFormat called', seconds);
     const t = seconds.split('.')[seconds.split('.').length - 1];
     return new Date(seconds * 1000).toISOString().substr(11, 8) + '.' + t + '00';
-}
+};
 
 /**
- * Function to write a file.
+ * Function to parse a VTT file and get the sentences and the timings.
  *
- * @param filename The name fo the file
- * @param text The text to write
- * @returns {string} The path where is stored the file on the server
+ * @param content The content of the VTT file
+ * @returns {{subtitles: *, timings: *}}
  */
-function writeFile(filename, text) {
-    logger.log('info', 'src.core.Subtitles.writeFile called', filename, text);
-    fs.writeFile('./content/subtitles/' + filename + '-SUB.vtt', text, function (err) {
-        if (err) {
-            return console.log(err);
-        }
-
-        console.log('The file ./content/subtitles/' + filename + '-SUB.vtt was saved!');
+const parseVttFile = (content) => {
+    logger.log('info', 'src.core.Subtitles.parseVttFile called', content);
+    const t = content.split('\n\n').slice(1);
+    const subtitles = [];
+    const timings = [];
+    t.forEach(x => {
+        const t = x.split('\n');
+        timings.push(transformVttTimeToSeconds(t[1].split(' ')[0]));
+        subtitles.push(t[2]);
     });
-    return './content/subtitles/' + filename + '-SUB.vtt';
-}
+    return {subtitles: subtitles, timings: timings};
+};
+
+/**
+ * Function to convert time hh:mm:ss.ms to seconds.ms.
+ *
+ * @param vttTime The time in VTT format
+ * @returns {string} The time in seconds
+ */
+const transformVttTimeToSeconds = (vttTime) => {
+    logger.log('info', 'src.core.Subtitles.transformVttTimeToSeconds called', vttTime);
+    const ms = vttTime.split('.');
+    const a = ms[0].split(':');
+    const seconds = (+a[0]) * 60 * 60 + (+a[1]) * 60 + (+a[2]);
+    return seconds + '.' + ms[1];
+};
+
 
 module.exports = {
     createVTTFile: createVTTFile,
     getSentences: getSentences,
-    getSubtitlesTiming: getSubtitlesTiming
+    getSubtitlesTiming: getSubtitlesTiming,
+    parseVttFile: parseVttFile,
 };

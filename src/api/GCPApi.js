@@ -12,6 +12,11 @@ const storage = new Storage({
     keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
 });
 
+/**
+ * Function to get the options for the signed URL.
+ *
+ * @returns {{expires: number, action: string, version: string}}
+ */
 const getOptions = () => {
     logger.log('info', 'src/api/GCPApi.getOptions called');
     return {
@@ -21,6 +26,13 @@ const getOptions = () => {
     };
 };
 
+/**
+ * Function to get the options for the download.
+ *
+ * @param videoName The file name to download
+ * @param contentFolder The path where well be saved the file
+ * @returns {{destination: string}}
+ */
 const optionsDownload = (videoName, contentFolder) => {
     logger.log('info', 'src/api/GCPApi.optionsDownload called', videoName, contentFolder);
     return {
@@ -47,6 +59,13 @@ const uploadToStorage = async (filePath) => {
     };
 };
 
+/**
+ * Function to download a file from GCP.
+ *
+ * @param videoName The file name to download
+ * @param contentFolder The path where will be saved the file
+ * @returns {Promise<{videoUrl: string, placeVideo: string}>}
+ */
 const downloadFromStorage = async (videoName, contentFolder) => {
     logger.log('info', 'src/api/GCPApi.downloadFromStorage called', videoName, contentFolder);
     await storage
@@ -59,6 +78,12 @@ const downloadFromStorage = async (videoName, contentFolder) => {
     };
 };
 
+/**
+ * Function to generate a signed URL.
+ *
+ * @param videoName The file name we want to access on GCP
+ * @returns {Promise<[string]>}
+ */
 const getSignedURL = async (videoName) => {
     logger.log('info', 'src/api/GCPApi.downloadFromStorage called', getSignedURL);
     const url = await storage

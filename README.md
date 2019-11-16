@@ -13,8 +13,9 @@ npm start
 
 | Routes       |     Function     |   Params   |     Results *(in json format)* |
 | :------------ | :-------------: | :-------------: | :-------------: |
-| /video/upload     |    Upload a video to GCP   | Video file name  | signedURL: The signed URL for the Client to upload the video to GCP. |
-| /video/subtitles     |     Get the subtitles for the given video     | Video file name  |  videoURL: URL of the video <br> vttURL: URL of the VTT file generated <br> timings: timings for each sentences *(in secs)*|
+| [POST] /video/upload     |    Get signed URL to upload a file on GCP   | Video file name  | signedURL: The signed URL |
+| [POST] /video/subtitles     |     Get the link of the video and the link of the Subtitles file     | Video file name  |  videoURL: URL of the video <br> vttURL: URL of the VTT file generated |
+| [POST] /video/vtt     |     Get the subtitles and their timings    | VTT file URL on GCP |  subtitles: The subtitles <br> timings: Timings of each sentences *(in secs)* |
 
 
 *<b>Deployed on polyteach-video.igpolytech.fr:80</b>*
