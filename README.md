@@ -1,4 +1,4 @@
-# Polyteach POC - Back
+# Polyteach Video API - [![Build Status](https://travis-ci.com/Alexis559/polyteach-video.svg?branch=master)](https://travis-ci.com/Alexis559/polyteach-video)
 
 <br>
 
