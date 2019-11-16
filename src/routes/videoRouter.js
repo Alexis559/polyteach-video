@@ -23,14 +23,14 @@ const videoFilePath = (videoName, videoPath, newExtension) => {
 
 // Get signed url to upload file
 router.post('/upload', async function (req, res) {
-    logger.log('info', 'POST /upload received', req);
+    logger.log('info', 'POST video/upload received', req);
     const URL = await GCP.getSignedURL(req.body.videoName);
     res.send({signedURL: URL[0]});
 });
 
 // Create VTT file for a video
 router.post('/subtitles', async function (req, res) {
-    logger.log('info', 'POST /subtitles received ', req);
+    logger.log('info', 'POST video/subtitles received ', req);
     await Storage.createFolderStorage(Config.CONTENT_FOLDER);
     await Storage.createFolderStorage(Config.SUBTITLES_FOLDER);
     try {
@@ -39,14 +39,14 @@ router.post('/subtitles', async function (req, res) {
         res.send({videoURL: videoPath.videoUrl, vttURL: vttURL.fileUrl});
     } catch (e) {
         console.log(e);
-        logger.log('error', 'POST /subtitles error ', e);
+        logger.log('error', 'POST video/subtitles error ', e);
         res.sendStatus(500);
     }
 });
 
 // Get subtitles from a VTT file
 router.post('/vtt', async function (req, res) {
-    logger.log('info', 'POST /vtt received ', req);
+    logger.log('info', 'POST video/vtt received ', req);
     const vttURL = req.body.vttURL;
     // eslint-disable-next-line no-useless-escape
     const vttPath = await GCP.downloadFromStorage(vttURL.replace(/^.*[\\\/]/, ''), Config.SUBTITLES_FOLDER);

@@ -93,8 +93,13 @@ const getSignedURL = async (videoName) => {
     return url;
 };
 
+const getBucketName = () => {
+    return process.env.BUCKET_NAME;
+};
+
 module.exports = {
     uploadToStorage: uploadToStorage,
     getSignedURL: getSignedURL,
-    downloadFromStorage: downloadFromStorage
+    downloadFromStorage: downloadFromStorage,
+    getBucketName: getBucketName,
 };
