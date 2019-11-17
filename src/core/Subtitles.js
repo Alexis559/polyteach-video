@@ -2,7 +2,7 @@ const logger = require('../helpers/logger');
 const Storage = require('../core/Storage');
 
 /**
- * Function to get the timing by sentences.
+ * Function to get the timings by sentences.
  *
  * @param response Results of the Speech To Text API of Google
  * @returns {[]} Array with the timing of beginning and ending of each sentences
@@ -11,14 +11,26 @@ const getSubtitlesTiming = (response) => {
     logger.log('info', 'src.core.Subtitles.getSubtitlesTiming called', response);
     const subtitlesTiming = [];
     let sentence = [];
+    let nbWordSentence = 0;
 
     response.results.forEach(result => {
         result.alternatives[0].words.forEach(wordInfo => {
-            if (wordInfo.word[0] === wordInfo.word[0].toUpperCase() && wordInfo.word.endsWith('.')) {
+            if (nbWordSentence >= 11) {
+                const startNew = `${wordInfo.endTime.seconds}` +
+                    '.' +
+                    wordInfo.startTime.nanos / 100000000;
+
+                sentence.push(startNew);
+                subtitlesTiming.push(sentence);
+                sentence = [];
+                sentence.push(startNew);
+                nbWordSentence = 0;
+            } else if (wordInfo.word[0] === wordInfo.word[0].toUpperCase() && (wordInfo.word.endsWith('.') || wordInfo.word.endsWith('?') || wordInfo.word.endsWith('!'))) {
                 const startSecs =
                     `${wordInfo.startTime.seconds}` +
                     '.' +
                     wordInfo.startTime.nanos / 100000000;
+
                 if (sentence.length === 0)
                     sentence.push(startSecs);
 
@@ -29,8 +41,9 @@ const getSubtitlesTiming = (response) => {
                 sentence.push(endSecs);
                 subtitlesTiming.push(sentence);
                 sentence = [];
+                nbWordSentence = 0;
 
-            } else if (wordInfo.word.endsWith('.')) {
+            } else if (wordInfo.word.endsWith('.') || wordInfo.word.endsWith('?') || wordInfo.word.endsWith('!')) {
                 const endSecs =
                     `${wordInfo.endTime.seconds}` +
                     '.' +
@@ -38,14 +51,20 @@ const getSubtitlesTiming = (response) => {
                 sentence.push(endSecs);
                 subtitlesTiming.push(sentence);
                 sentence = [];
+                nbWordSentence = 0;
             } else if (wordInfo.word[0] === wordInfo.word[0].toUpperCase()) {
                 const startSecs =
                     `${wordInfo.startTime.seconds}` +
                     '.' +
                     wordInfo.startTime.nanos / 100000000;
-                if (sentence.length === 0)
+                if (sentence.length === 0) {
                     sentence.push(startSecs);
+                }
+                nbWordSentence++;
+            } else {
+                nbWordSentence++;
             }
+
         });
     });
 
@@ -75,7 +94,33 @@ const getSentences = (response) => {
     const transcription = response.results
         .map(result => result.alternatives[0].transcript)
         .join('\n');
-    return transcription.split('. ');
+    const sentence = transcription.split(/[.?!]+[\s]/);
+    let sentences = [];
+    sentence.forEach(x => {
+        if (x.split(' ').length < 13)
+            sentences.push(x);
+        else
+            sentences = sentences.concat(recursSplitSentence([], x));
+    });
+    return sentences;
+};
+
+/**
+ * To split a sentence while it's still too long (more than 12 words)
+ *
+ * @param sentences Array of sentences already created from the first one
+ * @param sentence The left sentence that stay to be treated
+ * @returns {*}
+ */
+const recursSplitSentence = (sentences, sentence) => {
+    logger.log('info', 'src.core.Subtitles.recursSplitSentence called', sentences, sentence);
+    if (sentence === '' || sentence.split(' ').length < 13) {
+        sentences.push(sentence);
+        return sentences;
+    } else {
+        sentences.push(sentence.split(' ').slice(0, 12).join(' '));
+        return recursSplitSentence(sentences, sentence.split(' ').slice(12).join((' ')));
+    }
 };
 
 /**
@@ -93,7 +138,7 @@ const createVTTFile = (filename, timing, subtitles, contentFolder) => {
     let text = 'WEBVTT\n';
     subtitles.forEach((line) => {
         text += '\n' + i + '\n';
-        text += convertSecondsToVTTFormat(timing[i - 1][0]) + ' --> ' + convertSecondsToVTTFormat(timing[i - 1][1]);
+        text += convertSecondsToVTTFormat(timing[i - 1][0]) + '10 --> ' + convertSecondsToVTTFormat(timing[i - 1][1]) + '00';
         text += '\n' + line + '\n';
         i++;
     });
@@ -109,7 +154,7 @@ const createVTTFile = (filename, timing, subtitles, contentFolder) => {
 const convertSecondsToVTTFormat = (seconds) => {
     logger.log('info', 'src.core.Subtitles.convertSecondsToVTTFormat called', seconds);
     const t = seconds.split('.')[seconds.split('.').length - 1];
-    return new Date(seconds * 1000).toISOString().substr(11, 8) + '.' + t + '00';
+    return new Date(seconds * 1000).toISOString().substr(11, 8) + '.' + t;
 };
 
 /**
