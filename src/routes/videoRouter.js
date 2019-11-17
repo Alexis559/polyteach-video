@@ -36,6 +36,7 @@ router.post('/subtitles', async function (req, res) {
     try {
         const videoPath = await GCP.downloadFromStorage(req.body.videoName, Config.CONTENT_FOLDER);
         const vttURL = await treatmentSub(videoPath, req.body.videoName);
+        GCP.deleteFileFromBucket(videoFileName(req.body.videoName, '.mp3'));
         res.send({videoURL: videoPath.videoUrl, vttURL: vttURL.fileUrl});
     } catch (e) {
         console.log(e);

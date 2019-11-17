@@ -97,9 +97,23 @@ const getBucketName = () => {
     return process.env.BUCKET_NAME;
 };
 
+/**
+ * Function to delete a file from GCP.
+ *
+ * @param filename The name of the file that we want to delete
+ * @returns {Promise<void>}
+ */
+const deleteFileFromBucket = async (filename) => {
+    storage
+        .bucket(bucketName)
+        .file(filename)
+        .delete();
+};
+
 module.exports = {
     uploadToStorage: uploadToStorage,
     getSignedURL: getSignedURL,
     downloadFromStorage: downloadFromStorage,
     getBucketName: getBucketName,
+    deleteFileFromBucket: deleteFileFromBucket,
 };
