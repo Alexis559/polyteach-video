@@ -22,21 +22,21 @@ const videoFilePath = (videoName, videoPath, newExtension) => {
 };
 
 // Get signed url to upload file
-router.post('/upload', async function (req, res) {
+router.get('/upload/:videoName', async function (req, res) {
     logger.log('info', 'POST video/upload received', req);
-    const URL = await GCP.getSignedURL(req.body.videoName);
+    const URL = await GCP.getSignedURL(req.params.videoName);
     res.send({signedURL: URL[0]});
 });
 
 // Create VTT file for a video
-router.post('/subtitles', async function (req, res) {
+router.get('/subtitles/:videoName', async function (req, res) {
     logger.log('info', 'POST video/subtitles received ', req);
     await Storage.createFolderStorage(Config.CONTENT_FOLDER);
     await Storage.createFolderStorage(Config.SUBTITLES_FOLDER);
     try {
-        const videoPath = await GCP.downloadFromStorage(req.body.videoName, Config.CONTENT_FOLDER);
-        const vttURL = await treatmentSub(videoPath, req.body.videoName);
-        GCP.deleteFileFromBucket(videoFileName(req.body.videoName, '.mp3'));
+        const videoPath = await GCP.downloadFromStorage(req.params.videoName, Config.CONTENT_FOLDER);
+        const vttURL = await treatmentSub(videoPath, req.params.videoName);
+        GCP.deleteFileFromBucket(videoFileName(req.params.videoName, '.mp3'));
         res.send({videoURL: videoPath.videoUrl, vttURL: vttURL.fileUrl});
     } catch (e) {
         console.log(e);
@@ -46,9 +46,9 @@ router.post('/subtitles', async function (req, res) {
 });
 
 // Get subtitles from a VTT file
-router.post('/vtt', async function (req, res) {
+router.get('/vtt/:vttURL', async function (req, res) {
     logger.log('info', 'POST video/vtt received ', req);
-    const vttURL = req.body.vttURL;
+    const vttURL = req.params.vttURL;
     // eslint-disable-next-line no-useless-escape
     const vttPath = await GCP.downloadFromStorage(vttURL.replace(/^.*[\\\/]/, ''), Config.SUBTITLES_FOLDER);
     const content = await Storage.readContentFile(vttPath.placeVideo);
