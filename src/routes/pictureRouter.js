@@ -9,7 +9,7 @@ router.get('/upload/:pictureName', async function (req, res) {
     const URL = await GCP.getSignedURL(req.params.pictureName);
     res.send({
         signedURL: URL[0],
-        pictureURL: `https://storage.googleapis.com/${GCP.getBucketName()}/${req.body.pictureName}`
+        pictureURL: `https://storage.googleapis.com/${GCP.getBucketName()}/${req.params.pictureName}`
     });
 });
 

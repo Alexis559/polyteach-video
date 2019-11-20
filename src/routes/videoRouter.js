@@ -40,7 +40,7 @@ router.get('/subtitles/:videoName', async function (req, res) {
         res.send({videoURL: videoPath.videoUrl, vttURL: vttURL.fileUrl});
     } catch (e) {
         console.log(e);
-        logger.log('error', 'POST video/subtitles error ', e);
+        logger.log('error', 'POST video/subtitles error ', e, req.params.videoName);
         res.sendStatus(500);
     }
 });
