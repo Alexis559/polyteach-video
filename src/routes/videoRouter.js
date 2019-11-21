@@ -37,7 +37,7 @@ router.get('/subtitles/:videoName', async function (req, res) {
         const videoPath = await GCP.downloadFromStorage(req.params.videoName, Config.CONTENT_FOLDER);
         const vttURL = await treatmentSub(videoPath, req.params.videoName);
         GCP.deleteFileFromBucket(videoFileName(req.params.videoName, '.mp3'));
-        res.send({videoURL: videoPath.videoUrl, vttURL: vttURL.fileUrl});
+        res.send({videoURL: encodeURI(videoPath.videoUrl), vttURL: encodeURI(vttURL.fileUrl)});
     } catch (e) {
         console.log(e);
         logger.log('error', 'POST video/subtitles error ', e, req.params.videoName);
