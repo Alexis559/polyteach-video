@@ -21,10 +21,14 @@ const videoFilePath = (videoName, videoPath, newExtension) => {
     return videoPath.placeVideo.replace(extension, newExtension);
 };
 
+const replaceSpace = (videoName) => {
+    return videoName.replace(' ', '_');
+};
+
 // Get signed url to upload file
 router.get('/upload/:videoName', async function (req, res) {
     logger.log('info', 'GET video/upload received', req);
-    const URL = await GCP.getSignedURL(req.params.videoName);
+    const URL = await GCP.getSignedURL(replaceSpace(req.params.videoName));
     res.send({signedURL: URL[0]});
 });
 
@@ -33,14 +37,15 @@ router.get('/subtitles/:videoName', async function (req, res) {
     logger.log('info', 'GET video/subtitles received ', req);
     await Storage.createFolderStorage(Config.CONTENT_FOLDER);
     await Storage.createFolderStorage(Config.SUBTITLES_FOLDER);
+    const videoNameCorrected = replaceSpace(req.params.videoName);
     try {
-        const videoPath = await GCP.downloadFromStorage(req.params.videoName, Config.CONTENT_FOLDER);
-        const vttURL = await treatmentSub(videoPath, req.params.videoName);
-        GCP.deleteFileFromBucket(videoFileName(req.params.videoName, '.mp3'));
+        const videoPath = await GCP.downloadFromStorage(videoNameCorrected, Config.CONTENT_FOLDER);
+        const vttURL = await treatmentSub(videoPath, videoNameCorrected);
+        GCP.deleteFileFromBucket(videoFileName(videoNameCorrected, '.mp3'));
         res.send({videoURL: encodeURI(videoPath.videoUrl), vttURL: encodeURI(vttURL.fileUrl)});
     } catch (e) {
         console.log(e);
-        logger.log('error', 'POST video/subtitles error ', e, req.params.videoName);
+        logger.log('error', 'POST video/subtitles error ', e, videoNameCorrected);
         res.sendStatus(500);
     }
 });
