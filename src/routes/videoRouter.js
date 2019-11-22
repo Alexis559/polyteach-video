@@ -22,7 +22,7 @@ const videoFilePath = (videoName, videoPath, newExtension) => {
 };
 
 const replaceSpace = (videoName) => {
-    return videoName.replace(' ', '_');
+    return videoName.replace(/ /g, '_');
 };
 
 // Get signed url to upload file
